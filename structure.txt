@@ -1,0 +1,45 @@
+.
+├── .gitignore
+├── README.md
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── public
+│   └── vite.svg
+├── src
+│   ├── App.css
+│   ├── App.tsx
+│   ├── assets
+│   │   └── react.svg
+│   ├── components
+│   │   ├── AllCategories.tsx
+│   │   ├── Categories.tsx
+│   │   ├── Game.tsx
+│   │   ├── Leaderboard.tsx
+│   │   └── Menu.tsx
+│   ├── data
+│   │   ├── categories.ts
+│   │   ├── questions
+│   │   │   ├── gaming.ts
+│   │   │   ├── index.ts
+│   │   │   └── tech.ts
+│   │   └── questions.ts
+│   ├── index.css
+│   ├── main.tsx
+│   ├── styles
+│   ├── types
+│   │   └── index.ts
+│   ├── utils
+│   │   └── storage.ts
+│   └── vite-env.d.ts
+├── structure.txt
+├── tailwind.config.js
+├── tailwind.config.ts
+├── tsconfig.app.json
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.ts
+
+9 directories, 33 files
