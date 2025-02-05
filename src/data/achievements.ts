@@ -10,7 +10,7 @@ import {
     Speed,
     Timer
   } from '@mui/icons-material';
-  import { Achievement, AchievementCategory, UserStats, CategoryStats } from '../types';
+  import { Achievement, AchievementCategory, UserStats, CategoryStats } from '../shared/types';
   
   export const achievementCategories: AchievementCategory[] = [
     {

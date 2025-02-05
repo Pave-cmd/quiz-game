@@ -1,20 +1,20 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Achievement } from '../types';
+import { Achievement, AchievementRarity } from '../shared/types';
 
 interface AchievementPopupProps {
   achievement: Achievement;
   onClose: () => void;
 }
 
-const rarityColors = {
+const rarityColors: Record<AchievementRarity, string> = {
   common: 'from-gray-400 to-slate-600',
   rare: 'from-blue-400 to-indigo-600',
   epic: 'from-purple-400 to-pink-600',
   legendary: 'from-yellow-400 to-amber-600'
 };
 
-const rarityEmoji = {
+const rarityEmoji: Record<AchievementRarity, string> = {
   common: '🔰',
   rare: '🥈',
   epic: '🥇',

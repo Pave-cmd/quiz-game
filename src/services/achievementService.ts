@@ -1,12 +1,12 @@
 import { achievements } from '../data/achievements';
 import { categories } from '../data/categories';
-import { Achievement, CategoryStats } from '../types';
-import { getUserStats, updateUserStats, getCategoryStats } from './storage';
+import { Achievement, CategoryStats } from '../shared/types';
+import { storageService } from './storageService';
 
 const ACHIEVEMENT_CHECK_COOLDOWN = 1000; // 1 sekunda mezi kontrolami
 
-export const checkAchievements = (): Achievement[] => {
-  const userStats = getUserStats();
+export const checkAchievements = async (): Promise<Achievement[]> => {
+  const userStats = await storageService.getUserStats();
   const now = Date.now();
 
   // Předcházíme příliš častým kontrolám
@@ -17,13 +17,13 @@ export const checkAchievements = (): Achievement[] => {
 
   const categoryStats: Record<string, CategoryStats> = {};
   // Získáme statistiky všech kategorií
-  categories.forEach(category => {
-    const stats = getCategoryStats(category.id);
+  for (const category of categories) {
+    const stats = await storageService.getCategoryStats(category.id);
     categoryStats[category.id] = {
       ...stats,
       difficulty: category.difficulty
     };
-  });
+  }
 
   const unlockedAchievements = userStats.achievements || [];
   const newAchievements: Achievement[] = [];
@@ -44,7 +44,7 @@ export const checkAchievements = (): Achievement[] => {
 
   // Aktualizace statistik uživatele pokud byly získány nové achievementy
   if (newAchievements.length > 0) {
-    updateUserStats({
+    await storageService.updateUserStats({
       ...userStats,
       achievements: unlockedAchievements,
       lastAchievementCheck: now
@@ -54,17 +54,17 @@ export const checkAchievements = (): Achievement[] => {
   return newAchievements;
 };
 
-export const getAchievementProgress = (achievement: Achievement): number => {
-  const userStats = getUserStats();
+export const getAchievementProgress = async (achievement: Achievement): Promise<number> => {
+  const userStats = await storageService.getUserStats();
   const categoryStats: Record<string, CategoryStats> = {};
   
-  categories.forEach(category => {
-    const stats = getCategoryStats(category.id);
+  for (const category of categories) {
+    const stats = await storageService.getCategoryStats(category.id);
     categoryStats[category.id] = {
       ...stats,
       difficulty: category.difficulty
     };
-  });
+  }
 
   // Mapování pro progress jednotlivých achievementů
   const progressMap: Record<string, () => number> = {
@@ -96,14 +96,19 @@ export const getAchievementProgress = (achievement: Achievement): number => {
   return progressMap[achievement.id]?.() ?? 0;
 };
 
-export const getUnlockedAchievements = (): Achievement[] => {
-  const userStats = getUserStats();
+export const getUnlockedAchievements = async (): Promise<Achievement[]> => {
+  const userStats = await storageService.getUserStats();
   const unlockedIds = userStats.achievements || [];
   return achievements.filter(achievement => unlockedIds.includes(achievement.id));
 };
 
-export const getLockedAchievements = (): Achievement[] => {
-  const userStats = getUserStats();
+export const getLockedAchievements = async (): Promise<Achievement[]> => {
+  const userStats = await storageService.getUserStats();
   const unlockedIds = userStats.achievements || [];
   return achievements.filter(achievement => !unlockedIds.includes(achievement.id));
+};
+
+// Přidáme export funkce pro sledování odpovědí
+export const trackAnswerForAchievements = async (data: { timeLeft: number; isCorrect: boolean }): Promise<void> => {
+  await storageService.trackAnswerForAchievements(data);
 };

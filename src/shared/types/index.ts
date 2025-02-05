@@ -72,3 +72,35 @@ export interface CategoryStats {
   averageScore: number;
   difficulty?: 'easy' | 'medium' | 'hard';
 }
+
+// V src/types/index.ts přidáme pro lelvely:
+
+export interface LevelSystem {
+  currentLevel: number;
+  currentXP: number;
+  xpToNextLevel: number;
+  totalXP: number;
+}
+
+export interface LevelRequirement {
+  level: number;
+  xpNeeded: number;
+  rewards?: {
+    title?: string;
+    bonus?: number;
+    icon?: string;
+  };
+}
+
+// Upravíme UserStats
+export interface UserStats {
+  highScore: number;
+  gamesPlayed: number;
+  totalScore: number;
+  longestStreak: number;
+  questionsAnswered?: number;
+  correctAnswers?: number;
+  achievements?: string[];
+  lastAchievementCheck?: number;
+  levelInfo: LevelSystem; // Přidáno
+}

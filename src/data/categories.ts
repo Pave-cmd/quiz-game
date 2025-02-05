@@ -1,4 +1,4 @@
-import { Category } from '../types';
+import { Category } from '../shared/types';
 import {
   // Tech & Gaming
   RocketLaunchOutlined,

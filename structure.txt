@@ -1,6 +1,4 @@
 .
-├── .gitignore
-├── README.md
 ├── eslint.config.js
 ├── index.html
 ├── package-lock.json
@@ -8,18 +6,45 @@
 ├── postcss.config.js
 ├── public
 │   └── vite.svg
+├── server
+│   ├── src
+│   │   ├── config
+│   │   │   └── db.ts
+│   │   ├── index.ts
+│   │   ├── middleware
+│   │   │   └── auth.ts
+│   │   ├── models
+│   │   │   └── User.ts
+│   │   └── routes
+│   │       ├── auth.ts
+│   │       ├── leaderboard.ts
+│   │       └── stats.ts
+│   └── tsconfig.json
 ├── src
-│   ├── App.css
 │   ├── App.tsx
 │   ├── assets
 │   │   └── react.svg
 │   ├── components
+│   │   ├── AchievementPopup.tsx
 │   │   ├── AllCategories.tsx
+│   │   ├── Auth.tsx
 │   │   ├── Categories.tsx
-│   │   ├── Game.tsx
 │   │   ├── Leaderboard.tsx
-│   │   └── Menu.tsx
+│   │   ├── LevelDisplay.tsx
+│   │   ├── Menu.tsx
+│   │   └── game
+│   │       ├── AnswerOptions.tsx
+│   │       ├── FeedbackDisplay.tsx
+│   │       ├── Game.tsx
+│   │       ├── GameContainer.tsx
+│   │       ├── GameHeader.tsx
+│   │       ├── GameOver.tsx
+│   │       ├── QuestionDisplay.tsx
+│   │       └── index.ts
+│   ├── config
+│   │   └── mongodb.ts
 │   ├── data
+│   │   ├── achievements.ts
 │   │   ├── categories.ts
 │   │   ├── questions
 │   │   │   ├── gaming.ts
@@ -28,11 +53,20 @@
 │   │   └── questions.ts
 │   ├── index.css
 │   ├── main.tsx
+│   ├── services
+│   │   ├── achievementService.ts
+│   │   ├── authService.ts
+│   │   ├── index.ts
+│   │   ├── levelService.ts
+│   │   └── storageService.ts
+│   ├── shared
+│   │   ├── constants
+│   │   │   └── index.ts
+│   │   └── types
+│   │       └── index.ts
 │   ├── styles
-│   ├── types
-│   │   └── index.ts
-│   ├── utils
-│   │   └── storage.ts
+│   │   └── global
+│   │       └── App.css
 │   └── vite-env.d.ts
 ├── structure.txt
 ├── tailwind.config.js
@@ -42,4 +76,4 @@
 ├── tsconfig.node.json
 └── vite.config.ts
 
-9 directories, 33 files
+20 directories, 56 files

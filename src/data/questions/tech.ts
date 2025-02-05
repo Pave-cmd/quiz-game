@@ -1,5 +1,5 @@
 
-import { Question } from "../../types";
+import { Question } from "../../shared/types";
 
 const shuffleQuestions = (questions: Question[]): Question[] => {
  return [...questions].sort(() => Math.random() - 0.5);

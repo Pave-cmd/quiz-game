@@ -1,4 +1,4 @@
-import { Question } from "../../types";
+import { Question } from "../../shared/types";
 import { techQuestions } from "./tech";
 import { gamingQuestions } from "./gaming";
 // Import dalších kategorií...
