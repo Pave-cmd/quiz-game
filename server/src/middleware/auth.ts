@@ -13,7 +13,16 @@ export const auth = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const authHeader = req.header('Authorization');
+    
+    if (!authHeader) {
+      res.status(401).json({ message: 'No token, authorization denied' });
+      return;
+    }
+
+    const token = authHeader.startsWith('Bearer ') 
+      ? authHeader.slice(7) 
+      : authHeader;
 
     if (!token) {
       res.status(401).json({ message: 'No token, authorization denied' });
@@ -24,7 +33,11 @@ export const auth = async (
     req.userId = decoded.userId;
     next();
   } catch (error) {
-    res.status(401).json({ message: 'Token is not valid' });
-    return;
+    console.error('Auth middleware error:', error);
+    res.status(401).json({ 
+      message: error instanceof jwt.JsonWebTokenError 
+        ? 'Token is not valid' 
+        : 'Authentication failed' 
+    });
   }
 };

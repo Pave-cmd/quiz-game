@@ -1,6 +1,6 @@
-import { Question } from "../../shared/types";
-import { techQuestions } from "./tech";
 import { gamingQuestions } from "./gaming";
+import { techQuestions } from "./tech";
+import { Question } from "../../shared/types";
 // Import dalších kategorií...
 
 export const allQuestions: Question[] = [

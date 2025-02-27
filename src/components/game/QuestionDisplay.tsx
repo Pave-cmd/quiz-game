@@ -1,6 +1,8 @@
 // src/components/game/QuestionDisplay.tsx
 import React from 'react';
+
 import { motion } from 'framer-motion';
+
 import { Question, Category } from '../../shared/types';
 
 interface QuestionDisplayProps {
@@ -17,7 +19,7 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
   category
 }) => (
   <div className="mb-6">
-    <div className="flex justify-between items-center mb-2">
+    <div className="mb-2 flex items-center justify-between">
       <span className="text-sm font-medium text-white/80">
         Otázka {questionNumber} z {totalQuestions}
       </span>
@@ -25,15 +27,15 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({
         {category.name}
       </span>
     </div>
-    <div className="w-full bg-white/10 h-2 rounded-full">
+    <div className="h-2 w-full rounded-full bg-white/10">
       <motion.div 
-        className="bg-white h-full rounded-full"
+        className="h-full rounded-full bg-white"
         initial={{ width: "0%" }}
         animate={{ width: `${((questionNumber - 1) / totalQuestions) * 100}%` }}
         transition={{ duration: 0.5 }}
       />
     </div>
-    <h2 className="text-2xl font-bold text-white mt-4">{currentQuestion.question}</h2>
+    <h2 className="mt-4 text-2xl font-bold text-white">{currentQuestion.question}</h2>
   </div>
 );
 

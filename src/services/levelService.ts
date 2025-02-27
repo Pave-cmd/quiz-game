@@ -16,7 +16,7 @@ export const calculateXPForAnswer = (
 ): number => {
   if (!isCorrect) return 0;
 
-  let baseXP = 10;
+  const baseXP = 10;
   
   // Bonus za rychlost odpovědi
   const timeBonus = Math.floor(timeLeft * 0.5);

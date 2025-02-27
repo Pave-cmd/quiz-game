@@ -1,5 +1,7 @@
 import React from 'react';
+
 import { motion } from 'framer-motion';
+
 import { LevelSystem } from '../shared/types';
 
 interface LevelDisplayProps {
@@ -15,15 +17,15 @@ const LevelDisplay: React.FC<LevelDisplayProps> = ({ levelInfo, className }) => 
   const progressPercentage = ((levelInfo.totalXP - (levelInfo.currentXP - levelInfo.xpToNextLevel)) / levelInfo.xpToNextLevel) * 100;
 
   return (
-    <div className={`${className} bg-white/10 rounded-xl p-4`}>
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-white font-bold">Level {levelInfo.currentLevel}</span>
-        <span className="text-white/80 text-sm">
+    <div className={`${className} rounded-xl bg-white/10 p-4`}>
+      <div className="mb-2 flex items-center justify-between">
+        <span className="font-bold text-white">Level {levelInfo.currentLevel}</span>
+        <span className="text-sm text-white/80">
           {levelInfo.xpToNextLevel} XP to next level
         </span>
       </div>
       
-      <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
         <motion.div
           className="h-full bg-blue-500"
           initial={{ width: 0 }}
@@ -33,7 +35,7 @@ const LevelDisplay: React.FC<LevelDisplayProps> = ({ levelInfo, className }) => 
       </div>
       
       <div className="mt-2 text-right">
-        <span className="text-white/60 text-sm">
+        <span className="text-sm text-white/60">
           Total XP: {levelInfo.totalXP}
         </span>
       </div>

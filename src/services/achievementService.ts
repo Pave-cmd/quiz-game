@@ -1,7 +1,7 @@
+import { storageService } from './storageService';
 import { achievements } from '../data/achievements';
 import { categories } from '../data/categories';
 import { Achievement, CategoryStats } from '../shared/types';
-import { storageService } from './storageService';
 
 const ACHIEVEMENT_CHECK_COOLDOWN = 1000; // 1 sekunda mezi kontrolami
 

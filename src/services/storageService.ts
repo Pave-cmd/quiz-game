@@ -40,24 +40,9 @@ const offlineCache = new OfflineCache();
 
 class StorageService {
   async getUserStats(): Promise<UserStats> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('quiz_auth_token');
     if (!token) {
-      return {
-        highScore: 0,
-        gamesPlayed: 0,
-        totalScore: 0,
-        longestStreak: 0,
-        questionsAnswered: 0,
-        correctAnswers: 0,
-        achievements: [],
-        lastAchievementCheck: 0,
-        levelInfo: {
-          currentLevel: 1,
-          currentXP: 0,
-          xpToNextLevel: 100,
-          totalXP: 0
-        }
-      };
+      throw new Error('Uživatel není přihlášen');
     }
   
     try {
@@ -71,8 +56,12 @@ class StorageService {
     }
   }
 
-
   async updateUserStats(newStats: Partial<UserStats>): Promise<void> {
+    const token = localStorage.getItem('quiz_auth_token');
+    if (!token) {
+      throw new Error('Uživatel není přihlášen');
+    }
+
     try {
       await api.patch('/stats/user', newStats);
       // Aktualizujeme i offline cache
@@ -89,6 +78,11 @@ class StorageService {
 
   // Statistiky kategorií
   async getCategoryStats(categoryId: string): Promise<CategoryStats> {
+    const token = localStorage.getItem('quiz_auth_token');
+    if (!token) {
+      throw new Error('Uživatel není přihlášen');
+    }
+
     try {
       const response = await api.get<CategoryStats>(`/stats/category/${categoryId}`);
       await offlineCache.set(`category_stats_${categoryId}`, response.data);
@@ -101,6 +95,11 @@ class StorageService {
   }
 
   async updateCategoryStats(categoryId: string, score: number): Promise<void> {
+    const token = localStorage.getItem('quiz_auth_token');
+    if (!token) {
+      throw new Error('Uživatel není přihlášen');
+    }
+
     try {
       await api.patch(`/stats/category/${categoryId}`, { score });
       // Aktualizujeme cache
@@ -125,6 +124,13 @@ class StorageService {
   // Nová metoda pro sledování odpovědí pro achievementy
   async trackAnswerForAchievements(data: { timeLeft: number; isCorrect: boolean }): Promise<void> {
     try {
+      // Nejprve zkontrolujeme, zda je uživatel přihlášen
+      const token = localStorage.getItem('quiz_auth_token');
+      if (!token) {
+        console.log('Uživatel není přihlášen, nelze sledovat odpovědi');
+        return; // Místo vyhození chyby
+      }
+      
       const currentStats = await this.getUserStats();
       const updatedStats = {
         ...currentStats,
@@ -134,7 +140,7 @@ class StorageService {
       await this.updateUserStats(updatedStats);
     } catch (error) {
       console.error('Error tracking answer:', error);
-      throw error;
+      // Zachyťte chybu, ale nevyhazujte ji dál
     }
   }
 
@@ -148,6 +154,31 @@ class StorageService {
       if (cachedLeaderboard) return cachedLeaderboard;
       throw error;
     }
+  }
+
+  // Pro případ, kdy uživatel není přihlášen - vrátí výchozí statistiky
+  getDefaultUserStats(): UserStats {
+    return {
+      highScore: 0,
+      gamesPlayed: 0,
+      totalScore: 0,
+      longestStreak: 0,
+      questionsAnswered: 0,
+      correctAnswers: 0,
+      achievements: [],
+      lastAchievementCheck: 0,
+      levelInfo: {
+        currentLevel: 1,
+        currentXP: 0,
+        xpToNextLevel: 100,
+        totalXP: 0
+      }
+    };
+  }
+
+  // Kontrola, zda je uživatel přihlášen
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('quiz_auth_token');
   }
 
   // Správa offline změn
@@ -168,6 +199,11 @@ class StorageService {
 
   // Synchronizace offline změn
   async syncOfflineChanges(): Promise<void> {
+    // Kontrola, zda je uživatel přihlášen
+    if (!this.isLoggedIn()) {
+      return;
+    }
+    
     const queue = await this.getOfflineQueue();
     if (queue.length === 0) return;
 

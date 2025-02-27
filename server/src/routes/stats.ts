@@ -1,7 +1,8 @@
 import express, { Request, Response, NextFunction } from 'express';
+import { Document } from 'mongoose';
+
 import { auth } from '../middleware/auth';
 import User from '../models/User';
-import { Document } from 'mongoose';
 
 const router = express.Router();
 

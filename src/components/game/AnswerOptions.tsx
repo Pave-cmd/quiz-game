@@ -1,5 +1,6 @@
 // src/components/game/AnswerOptions.tsx
 import React from 'react';
+
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface AnswerOptionsProps {
@@ -28,31 +29,32 @@ const AnswerOptions: React.FC<AnswerOptionsProps> = ({
 
   return (
     <div className="grid grid-cols-1 gap-4">
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {options.map((option, index) => (
-          <motion.button
+          <motion.div
             key={index}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3, delay: index * 0.1 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => !feedback.isVisible && onAnswer(index)}
-            disabled={feedback.isVisible}
-            className={`${getOptionClassName(index)} p-4 rounded-xl text-left text-white transition-all duration-200 relative overflow-hidden`}
           >
-            {option}
-            {feedback.isVisible && index === correctAnswer && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-xl"
-              >
-                ✓
-              </motion.div>
-            )}
-          </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => !feedback.isVisible && onAnswer(index)}
+              disabled={feedback.isVisible}
+              className={`${getOptionClassName(index)} relative overflow-hidden rounded-xl p-4 text-left text-white transition-all duration-200`}
+            >
+              {option}
+              {feedback.isVisible && index === correctAnswer ? <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-xl"
+                >
+                  ✓
+                </motion.div> : null}
+            </motion.button>
+          </motion.div>
         ))}
       </AnimatePresence>
     </div>

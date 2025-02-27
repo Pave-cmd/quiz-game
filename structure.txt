@@ -1,5 +1,6 @@
 .
-├── eslint.config.js
+├── eslint.config.mjs
+├── eslint.js
 ├── index.html
 ├── package-lock.json
 ├── package.json
@@ -7,6 +8,8 @@
 ├── public
 │   └── vite.svg
 ├── server
+│   ├── package-lock.json
+│   ├── package.json
 │   ├── src
 │   │   ├── config
 │   │   │   └── db.ts
@@ -22,6 +25,7 @@
 │   └── tsconfig.json
 ├── src
 │   ├── App.tsx
+│   ├── TestComponent.tsx
 │   ├── assets
 │   │   └── react.svg
 │   ├── components
@@ -76,4 +80,4 @@
 ├── tsconfig.node.json
 └── vite.config.ts
 
-20 directories, 56 files
+20 directories, 60 files

@@ -1,9 +1,10 @@
-import express, { Router, Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
+import express, { Router, Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import User from '../models/User';
-import { auth } from '../middleware/auth';
 import { Document } from 'mongoose';
+
+import { auth } from '../middleware/auth';
+import User from '../models/User';
 
 const router: Router = express.Router();
 

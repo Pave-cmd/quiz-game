@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
+
 import { motion, AnimatePresence } from 'framer-motion';
+
 import { Achievement, AchievementRarity } from '../shared/types';
 
 interface AchievementPopupProps {
@@ -35,10 +37,10 @@ const AchievementPopup: React.FC<AchievementPopupProps> = ({ achievement, onClos
         exit={{ opacity: 0, scale: 0.5, y: 50 }}
         className="fixed bottom-4 right-4 z-50"
       >
-        <div className={`bg-gradient-to-r ${rarityColors[achievement.rarity]} p-4 rounded-xl shadow-xl backdrop-blur-lg border border-white/20 max-w-sm`}>
+        <div className={`bg-gradient-to-r ${rarityColors[achievement.rarity]} max-w-sm rounded-xl border border-white/20 p-4 shadow-xl backdrop-blur-lg`}>
           <div className="flex items-start gap-4">
-            <div className="p-2 bg-white/10 rounded-lg">
-              <achievement.icon className="w-8 h-8 text-white" />
+            <div className="rounded-lg bg-white/10 p-2">
+              <achievement.icon className="size-8 text-white" />
             </div>
             
             <div className="flex-1">
@@ -51,16 +53,16 @@ const AchievementPopup: React.FC<AchievementPopupProps> = ({ achievement, onClos
                 </span>
               </div>
               
-              <p className="text-sm text-white/80 mt-1">
+              <p className="mt-1 text-sm text-white/80">
                 {achievement.description}
               </p>
               
-              <div className="flex items-center gap-2 mt-2">
+              <div className="mt-2 flex items-center gap-2">
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: '100%' }}
                   transition={{ duration: 5 }}
-                  className="h-1 bg-white/30 rounded-full"
+                  className="h-1 rounded-full bg-white/30"
                 />
                 <span className="text-xs text-white/60">
                   Achievement odemčen!

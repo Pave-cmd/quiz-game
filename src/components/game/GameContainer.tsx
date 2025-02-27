@@ -1,25 +1,28 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+
 import { motion } from 'framer-motion';
-import { GameState, Question, Achievement, UserStats } from '../../shared/types';
-import { categories } from '../../data/categories';
-import { questions } from '../../data/questions';
-import { storageService } from '../../services/storageService';
-import { checkAchievements, trackAnswerForAchievements } from '../../services/achievementService';
-import { calculateXPForAnswer, updateLevelProgress } from '../../services/levelService';
-import GameHeader from './GameHeader';
-import QuestionDisplay from './QuestionDisplay';
+import { useParams, useNavigate } from 'react-router-dom';
+
 import AnswerOptions from './AnswerOptions';
 import FeedbackDisplay from './FeedbackDisplay';
+import GameHeader from './GameHeader';
 import GameOver from './GameOver';
+import QuestionDisplay from './QuestionDisplay';
+import { categories } from '../../data/categories';
+import { questions } from '../../data/questions';
+import { checkAchievements, trackAnswerForAchievements } from '../../services/achievementService';
+import { calculateXPForAnswer, updateLevelProgress } from '../../services/levelService';
+import { storageService } from '../../services/storageService';
+import { GameState, Question, Achievement, UserStats } from '../../shared/types';
 import AchievementPopup from '../AchievementPopup';
+import BackToMenu from '../BackToMenu';
 
 const GameContainer = () => {
  const { categoryId } = useParams<{ categoryId: string }>();
  const navigate = useNavigate();
  const [error, setError] = useState<string | null>(null);
  const [loading, setLoading] = useState(true);
- const [xpGained, setXPGained] = useState(0);
+ // Odstraněná nepoužívaná proměnná xpGained
  const [stats, setStats] = useState<UserStats | null>(null);
  const [gameState, setGameState] = useState<GameState>({
    score: 0,
@@ -88,44 +91,52 @@ const GameContainer = () => {
  }, [feedback, timeLeft]);
 
  const handleAnswer = async (answerIndex: number) => {
-   const isCorrect = answerIndex === currentQuestion.correctAnswer;
-   setFeedback({ isVisible: true, isCorrect, selectedIndex: answerIndex });
-   
-   const earnedXP = calculateXPForAnswer(
-     isCorrect,
-     timeLeft,
-     currentQuestion.difficulty,
-     gameState.streak
-   );
-   
-   if (isCorrect) {
-     setGameState(prev => ({
-       ...prev,
-       score: prev.score + currentQuestion.points,
-       streak: prev.streak + 1
-     }));
-     
-     const currentStats = await storageService.getUserStats();
-     const updatedStats = updateLevelProgress(currentStats, earnedXP);
-     await storageService.updateUserStats(updatedStats);
-     setXPGained(earnedXP);
-   }
+  try {
+    const isCorrect = answerIndex === currentQuestion.correctAnswer;
+    setFeedback({ isVisible: true, isCorrect, selectedIndex: answerIndex });
+    
+    const earnedXP = calculateXPForAnswer(
+      isCorrect,
+      timeLeft,
+      currentQuestion.difficulty,
+      gameState.streak
+    );
+    
+    if (isCorrect) {
+      setGameState(prev => ({
+        ...prev,
+        score: prev.score + currentQuestion.points,
+        streak: prev.streak + 1
+      }));
+      
+      try {
+        const currentStats = await storageService.getUserStats();
+        const updatedStats = updateLevelProgress(currentStats, earnedXP);
+        await storageService.updateUserStats(updatedStats);
+      } catch (statsError) {
+        console.error('Nelze aktualizovat statistiky:', statsError);
+        // Pokračujeme ve hře i když se statistiky nepodaří aktualizovat
+      }
+    }
 
-   await new Promise(resolve => setTimeout(resolve, 4000));
-   
-   setFeedback({ isVisible: false, isCorrect: false, selectedIndex: -1 });
-   setXPGained(0);
+    await new Promise(resolve => setTimeout(resolve, 4000));
+    
+    setFeedback({ isVisible: false, isCorrect: false, selectedIndex: -1 });
 
-   if (!isCorrect || gameState.currentQuestion === categoryQuestions.length - 1) {
-     handleGameOver();
-   } else {
-     setGameState(prev => ({
-       ...prev,
-       currentQuestion: prev.currentQuestion + 1
-     }));
-     setTimeLeft(30);
-   }
- };
+    if (!isCorrect || gameState.currentQuestion === categoryQuestions.length - 1) {
+      handleGameOver();
+    } else {
+      setGameState(prev => ({
+        ...prev,
+        currentQuestion: prev.currentQuestion + 1
+      }));
+      setTimeLeft(30);
+    }
+  } catch (error) {
+    console.error('Chyba při zpracování odpovědi:', error);
+    setError('Došlo k chybě při zpracování odpovědi.');
+  }
+};
 
  const handleGameOver = async () => {
    setGameState(prev => ({ ...prev, isGameOver: true }));
@@ -151,10 +162,26 @@ const GameContainer = () => {
    }
  };
 
+ const handleRestart = () => {
+   setGameState({
+     score: 0,
+     currentQuestion: 0,
+     isGameOver: false,
+     streak: 0
+   });
+   setTimeLeft(30);
+   setFeedback({
+     isVisible: false,
+     isCorrect: false,
+     selectedIndex: -1
+   });
+ };
+
  if (loading) {
    return (
-     <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center p-4">
-       <div className="bg-white/10 backdrop-blur-xl p-8 rounded-3xl shadow-2xl">
+     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4">
+       <BackToMenu />
+       <div className="rounded-3xl bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
          <p className="text-white">Načítání...</p>
        </div>
      </div>
@@ -163,8 +190,9 @@ const GameContainer = () => {
 
  if (error) {
    return (
-     <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center p-4">
-       <div className="bg-white/10 backdrop-blur-xl p-8 rounded-3xl shadow-2xl">
+     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4">
+       <BackToMenu />
+       <div className="rounded-3xl bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
          <p className="text-white">{error}</p>
        </div>
      </div>
@@ -173,8 +201,9 @@ const GameContainer = () => {
 
  if (!category || !currentQuestion || !stats) {
    return (
-     <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center p-4">
-       <div className="bg-white/10 backdrop-blur-xl p-8 rounded-3xl shadow-2xl">
+     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4">
+       <BackToMenu />
+       <div className="rounded-3xl bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
          <p className="text-white">Kategorie nebo otázka nenalezena</p>
        </div>
      </div>
@@ -182,7 +211,16 @@ const GameContainer = () => {
  }
 
  if (gameState.isGameOver) {
-   return <GameOver score={gameState.score} streak={gameState.streak} />;
+   return (
+     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4">
+       <BackToMenu />
+       <GameOver 
+         score={gameState.score} 
+         totalQuestions={categoryQuestions.length}
+         onRestart={handleRestart}
+       />
+     </div>
+   );
  }
 
  return (
@@ -190,14 +228,17 @@ const GameContainer = () => {
      <motion.div 
        initial={{ opacity: 0 }}
        animate={{ opacity: 1 }}
-       className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center p-4"
+       className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4"
      >
-       <div className="bg-white/10 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/20 w-full max-w-2xl">
+       <BackToMenu />
+       <div className="w-full max-w-2xl rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
          <GameHeader 
-           gameState={gameState}
+           score={gameState.score}
+           streak={gameState.streak}
+           questionNumber={gameState.currentQuestion + 1}
+           totalQuestions={categoryQuestions.length}
            timeLeft={timeLeft}
-           xpGained={xpGained}
-           levelInfo={stats.levelInfo}
+           category={category.name}
          />
          
          <QuestionDisplay 
@@ -221,12 +262,10 @@ const GameContainer = () => {
        </div>
      </motion.div>
 
-     {newAchievement && (
-       <AchievementPopup 
+     {newAchievement ? <AchievementPopup 
          achievement={newAchievement}
          onClose={() => setNewAchievement(null)}
-       />
-     )}
+       /> : null}
    </>
  );
 };

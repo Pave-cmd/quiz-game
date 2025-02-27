@@ -1,42 +1,84 @@
-//src/components/game/GameOver.tsx
-import React from 'react';
+// src/components/game/GameOver.tsx
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 interface GameOverProps {
   score: number;
-  streak: number;
+  totalQuestions: number;
+  onRestart: () => void;
 }
 
-const GameOver: React.FC<GameOverProps> = ({ score, streak }) => {
+const GameOver = ({ score, totalQuestions, onRestart }: GameOverProps) => {
   const navigate = useNavigate();
   
+  // Výpočet procentuálního výsledku
+  const percentage = Math.round((score / (totalQuestions * 10)) * 100);
+  
+  // Hodnocení výkonu
+  const getRating = () => {
+    if (percentage >= 90) return '🏆 Šampion kvízu!';
+    if (percentage >= 70) return '🌟 Skvělý výkon!';
+    if (percentage >= 50) return '👍 Dobrá práce!';
+    if (percentage >= 30) return '🙂 Máš na víc!';
+    return '😕 Příště to bude lepší!';
+  };
+  
+  // Návrat do hlavního menu
+  const handleBackToMenu = () => {
+    navigate('/');
+  };
+
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center p-4"
-    >
-      <div className="bg-white/10 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/20 text-center">
-        <h2 className="text-3xl font-bold text-white mb-4">Konec hry!</h2>
-        <p className="text-xl text-white/90 mb-2">Skóre: {score}</p>
-        <p className="text-lg text-white/90 mb-4">Nejdelší série: {streak}</p>
-        <div className="space-x-4">
-          <button
-            onClick={() => navigate("/categories")}
-            className="bg-white/20 hover:bg-white/30 text-white px-6 py-2 rounded-xl transition-all duration-200"
-          >
-            Zpět na kategorie
-          </button>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-xl transition-all duration-200"
-          >
-            Hrát znovu
-          </button>
-        </div>
+    <div className="rounded-3xl border border-white/20 bg-white/10 p-8 text-center shadow-2xl backdrop-blur-xl">
+      <motion.h2
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-6 bg-gradient-to-r from-white to-white/80 bg-clip-text text-4xl font-bold text-transparent"
+      >
+        Konec hry
+      </motion.h2>
+      
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
+        className="mx-auto mb-6 flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-br from-indigo-400 to-purple-600 text-4xl font-bold text-white"
+      >
+        {score}
+      </motion.div>
+      
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="space-y-4 text-white"
+      >
+        <p className="text-xl">
+          <span className="font-bold">{percentage}%</span> úspěšnost
+        </p>
+        <p className="text-2xl font-semibold">{getRating()}</p>
+      </motion.div>
+      
+      <div className="mt-8 space-y-4">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onRestart}
+          className="w-full rounded-xl bg-gradient-to-r from-blue-500 to-blue-700 py-3 font-semibold text-white shadow-lg"
+        >
+          Hrát znovu
+        </motion.button>
+        
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleBackToMenu}
+          className="w-full rounded-xl bg-gradient-to-r from-purple-500 to-purple-700 py-3 font-semibold text-white shadow-lg"
+        >
+          Zpět do menu
+        </motion.button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

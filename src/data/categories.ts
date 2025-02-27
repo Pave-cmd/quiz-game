@@ -1,4 +1,3 @@
-import { Category } from '../shared/types';
 import {
   // Tech & Gaming
   RocketLaunchOutlined,
@@ -32,6 +31,8 @@ import {
   AccountBalanceOutlined,
   PublicOutlined,
 } from '@mui/icons-material';
+
+import { Category } from '../shared/types';
 
 export const categories: Category[] = [
   // Tech & Gaming

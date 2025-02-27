@@ -1,7 +1,10 @@
 import { useState } from 'react';
+
 import { motion, AnimatePresence } from 'framer-motion';
-import { categories } from '../data/categories';
 import { useNavigate } from 'react-router-dom';
+
+import { categories } from '../data/categories';
+import BackToMenu from './BackToMenu';
 
 const Categories = () => {
   const navigate = useNavigate();
@@ -17,20 +20,22 @@ const Categories = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-6">
-      <div className="max-w-7xl mx-auto">
+      <BackToMenu />
+      
+      <div className="mx-auto max-w-7xl">
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8 space-y-4"
         >
-          <div className="flex flex-wrap gap-4 items-center justify-between bg-white/10 backdrop-blur-xl p-4 rounded-2xl">
-            <div className="flex-1 min-w-[300px]">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white/10 p-4 backdrop-blur-xl">
+            <div className="min-w-[300px] flex-1">
               <input
                 type="text"
                 placeholder="Hledat kategorie..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30"
+                className="w-full rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30"
               />
             </div>
             
@@ -39,9 +44,9 @@ const Categories = () => {
                 <button
                   key={difficulty}
                   onClick={() => setDifficultyFilter(difficulty)}
-                  className={`px-4 py-2 rounded-xl transition-all ${
+                  className={`rounded-xl px-4 py-2 transition-all ${
                     difficultyFilter === difficulty
-                      ? 'bg-white text-purple-600 font-bold'
+                      ? 'bg-white font-bold text-purple-600'
                       : 'bg-white/10 text-white hover:bg-white/20'
                   }`}
                 >
@@ -52,7 +57,7 @@ const Categories = () => {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           <AnimatePresence>
             {filteredCategories.map((category, index) => (
               <motion.div
@@ -66,10 +71,10 @@ const Categories = () => {
                 className="cursor-pointer"
                 onClick={() => navigate(`/game/${category.id}`)}
               >
-                <div className={`bg-gradient-to-r ${category.color} rounded-2xl p-6 h-full backdrop-blur-sm bg-opacity-90 border border-white/10 shadow-xl`}>
+                <div className={`bg-gradient-to-r ${category.color} h-full rounded-2xl border border-white/10 bg-opacity-90 p-6 shadow-xl backdrop-blur-sm`}>
                   <div className="flex items-start justify-between">
-                    <category.icon className="w-8 h-8 text-white/90" strokeWidth={1.5} />
-                    <span className={`px-3 py-1 rounded-full text-sm ${
+                    <category.icon className="size-8 text-white/90" strokeWidth={1.5} />
+                    <span className={`rounded-full px-3 py-1 text-sm ${
                       category.difficulty === 'easy' ? 'bg-green-500/20' :
                       category.difficulty === 'medium' ? 'bg-yellow-500/20' :
                       'bg-red-500/20'
@@ -78,19 +83,19 @@ const Categories = () => {
                     </span>
                   </div>
                   
-                  <h3 className="text-2xl font-bold text-white mb-2 mt-4">{category.name}</h3>
-                  <p className="text-white/80 mb-4 text-sm">{category.description}</p>
+                  <h3 className="mb-2 mt-4 text-2xl font-bold text-white">{category.name}</h3>
+                  <p className="mb-4 text-sm text-white/80">{category.description}</p>
                   
-                  <div className="flex justify-between items-center mt-auto">
-                    <span className="text-white/90 text-sm">
+                  <div className="mt-auto flex items-center justify-between">
+                    <span className="text-sm text-white/90">
                       {category.questionsCount} otázek
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className="text-white/90 text-sm">
+                      <span className="text-sm text-white/90">
                         Úspěšnost: 75%
                       </span>
-                      <div className="w-20 h-2 bg-white/20 rounded-full">
-                        <div className="w-3/4 h-full bg-white rounded-full"/>
+                      <div className="h-2 w-20 rounded-full bg-white/20">
+                        <div className="h-full w-3/4 rounded-full bg-white"/>
                       </div>
                     </div>
                   </div>
@@ -104,7 +109,7 @@ const Categories = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-center text-white text-xl mt-12"
+            className="mt-12 text-center text-xl text-white"
           >
             Žádné kategorie neodpovídají vašemu vyhledávání
           </motion.div>
