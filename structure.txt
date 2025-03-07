@@ -54,9 +54,17 @@
 │   │   ├── achievements.ts
 │   │   ├── categories.ts
 │   │   ├── questions
+│   │   │   ├── art.ts
 │   │   │   ├── gaming.ts
+│   │   │   ├── health.ts
 │   │   │   ├── index.ts
-│   │   │   └── tech.ts
+│   │   │   ├── math.ts
+│   │   │   ├── moviesSeries.ts
+│   │   │   ├── music.ts
+│   │   │   ├── science.ts
+│   │   │   ├── sports.ts
+│   │   │   ├── tech.ts
+│   │   │   └── travel.ts
 │   │   └── questions.ts
 │   ├── index.css
 │   ├── main.tsx
@@ -83,4 +91,4 @@
 ├── tsconfig.node.json
 └── vite.config.ts
 
-20 directories, 63 files
+20 directories, 71 files

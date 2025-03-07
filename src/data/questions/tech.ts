@@ -1,11 +1,6 @@
 import { Question } from "../../shared/types";
 
-const shuffleQuestions = (questions: Question[]): Question[] => {
-  return [...questions].sort(() => Math.random() - 0.5);
-};
-
-// Lehké otázky (20)
-const easyTechQuestions: Question[] = [
+export const techQuestions: Question[] = [
   {
     id: 1,
     question: "Co znamená zkratka PC?",
@@ -185,11 +180,7 @@ const easyTechQuestions: Question[] = [
     category: "tech",
     difficulty: "easy",
     points: 100
-  }
-];
-
-// Středně těžké otázky (20)
-const mediumTechQuestions: Question[] = [
+  },
   {
     id: 21,
     question: "Co je to cloud computing?",
@@ -469,11 +460,7 @@ const mediumTechQuestions: Question[] = [
     category: "tech",
     difficulty: "medium",
     points: 200
-  }
-];
-
-// Těžké otázky (10)
-const hardTechQuestions: Question[] = [
+  },
   {
     id: 41,
     question: "Co je to kvantové počítání?",
@@ -615,35 +602,3 @@ const hardTechQuestions: Question[] = [
     points: 300
   }
 ];
-
-// Spojení všech otázek do jednoho pole
-const allTechQuestions = [
-  ...easyTechQuestions,
-  ...mediumTechQuestions,
-  ...hardTechQuestions
-];
-
-// Export funkcí pro různé způsoby získání otázek
-export const getTechQuestions = (count: number = 10, difficulty?: 'easy' | 'medium' | 'hard') => {
-  let questions = allTechQuestions;
-
-  if (difficulty) {
-    questions = questions.filter(q => q.difficulty === difficulty);
-  }
-
-  return shuffleQuestions(questions).slice(0, count);
-};
-
-export const getProgressiveTechQuestions = (count: number = 10) => {
-  const easyCount = Math.floor(count * 0.4);  // 40% lehkých
-  const mediumCount = Math.floor(count * 0.4); // 40% středních
-  const hardCount = count - easyCount - mediumCount; // zbytek těžkých
-
-  return [
-    ...shuffleQuestions(easyTechQuestions).slice(0, easyCount),
-    ...shuffleQuestions(mediumTechQuestions).slice(0, mediumCount),
-    ...shuffleQuestions(hardTechQuestions).slice(0, hardCount)
-  ];
-};
-
-export const techQuestions = allTechQuestions;

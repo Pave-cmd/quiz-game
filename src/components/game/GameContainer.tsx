@@ -16,40 +16,7 @@ import { GameState, Question, Achievement, UserStats } from '../../shared/types'
 import AchievementPopup from '../AchievementPopup';
 import BackToMenu from '../BackToMenu';
 
-// Přidaná funkce pro náhodný výběr otázek z technické kategorie
-const getRandomTechQuestions = (allQuestions: Question[]): Question[] => {
-  // Filtrujeme pouze technické otázky
-  const techQuestions = allQuestions.filter(q => q.category === "tech");
-  
-  // Rozdělíme otázky podle obtížnosti
-  const easyQuestions = techQuestions.filter(q => q.difficulty === "easy");
-  const mediumQuestions = techQuestions.filter(q => q.difficulty === "medium");
-  const hardQuestions = techQuestions.filter(q => q.difficulty === "hard");
-  
-  // Funkce pro náhodné zamíchání pole (Fisher-Yates shuffle algoritmus)
-  const shuffleArray = <T,>(array: T[]): T[] => {
-    const newArray = [...array];
-    for (let i = newArray.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-    }
-    return newArray;
-  };
-  
-  // Definujeme počet otázek pro každou obtížnost
-  // Celkem chceme 20 otázek, zachováme podobný poměr jako v původních datech
-  const numEasy = 8;     // 8 lehkých otázek (40%)
-  const numMedium = 8;   // 8 středních otázek (40%)
-  const numHard = 4;     // 4 těžké otázky (20%)
-  
-  // Náhodně vybereme otázky pro každou obtížnost
-  const selectedEasy = shuffleArray(easyQuestions).slice(0, numEasy);
-  const selectedMedium = shuffleArray(mediumQuestions).slice(0, numMedium);
-  const selectedHard = shuffleArray(hardQuestions).slice(0, numHard);
-  
-  // Spojíme vybrané otázky podle obtížnosti (od nejlehčí po nejtěžší)
-  return [...selectedEasy, ...selectedMedium, ...selectedHard];
-};
+// Odstraněna speciální funkce getRandomTechQuestions
 
 const GameContainer = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
@@ -63,6 +30,8 @@ const GameContainer = () => {
     isGameOver: false,
     streak: 0
   });
+  // Přidáme nový stav pro seznam otázek
+  const [categoryQuestions, setCategoryQuestions] = useState<Question[]>([]);
   const [timeLeft, setTimeLeft] = useState(30);
   const [feedback, setFeedback] = useState({
     isVisible: false,
@@ -85,19 +54,33 @@ const GameContainer = () => {
     };
   }, []);
 
+  // Funkce pro zamíchání otázek pro všechny kategorie
+  const shuffleQuestions = (questions: Question[]): Question[] => {
+    const shuffled = [...questions];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   const category = categories.find(c => c.id === categoryId);
   
-  // Upravená část pro výběr otázek
-  let categoryQuestions: Question[] = [];
-  if (categoryId === 'tech') {
-    // Pro technickou kategorii použijeme náš speciální výběr 20 otázek
-    categoryQuestions = getRandomTechQuestions(questions);
-  } else {
-    // Pro ostatní kategorie zachováme původní kód
-    categoryQuestions = questions.filter(q => q.category.toLowerCase() === categoryId);
-  }
+  // ODSTRANÍME tento kód, který způsobuje problém:
+  // const categoryQuestions = shuffleQuestions(
+  //   questions.filter(q => q.category.toLowerCase() === categoryId)
+  // );
   
+  // Získáme aktuální otázku z našeho pole uloženého ve stavu
   const currentQuestion = categoryQuestions[gameState.currentQuestion];
+
+  // Načítáme a mícháme otázky pouze jednou při počátečním načtení
+  useEffect(() => {
+    if (categoryId) {
+      const filteredQuestions = questions.filter(q => q.category.toLowerCase() === categoryId);
+      setCategoryQuestions(shuffleQuestions(filteredQuestions));
+    }
+  }, [categoryId]); // Závislost pouze na ID kategorie
 
   useEffect(() => {
     if (!category) {
@@ -124,45 +107,80 @@ const GameContainer = () => {
     loadStats();
   }, [navigate]);
 
+  // Oprava časovače - pouze jeden aktivní časovač v jednom okamžiku
   useEffect(() => {
-    let timer: NodeJS.Timeout | null = null;
-    
-    if (timeLeft > 0 && !gameState.isGameOver && !feedback.isVisible) {
-      timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+    // Vždy zrušíme předchozí časovač
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
     }
-    else if (timeLeft === 0 && !gameState.isGameOver && !feedback.isVisible) {
+
+    // Pokud je viditelná zpětná vazba nebo je hra ukončená, nepokračujeme s časovačem
+    if (feedback.isVisible || gameState.isGameOver) {
+      return;
+    }
+
+    if (timeLeft > 0) {
+      // Vytvoříme nový časovač
+      const timer = setTimeout(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+      
+      // Uložíme referenci na časovač
+      timerRef.current = timer;
+    } 
+    else if (timeLeft === 0) {
+      // Pouze pokud není zpětná vazba viditelná a hra není ukončená
       handleGameOver();
     }
     
+    // Důležité: Vyčistit časovač při odmontování komponenty nebo změně závislostí
     return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [timeLeft, gameState.isGameOver, feedback.isVisible]);
-
-  useEffect(() => {
-    const checkForAchievements = async () => {
-      if (feedback.isVisible && feedback.isCorrect) {
-        await trackAnswerForAchievements({ timeLeft, isCorrect: true });
-        const newAchievements = await checkAchievements();
-        if (newAchievements.length > 0) {
-          setNewAchievement(newAchievements[0]);
-        }
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
       }
     };
+  }, [timeLeft, feedback.isVisible, gameState.isGameOver]);
+
+  // Oprava kontroly achievementů, aby nezpůsobovala zaseknutí
+  useEffect(() => {
+    const checkForAchievements = async () => {
+      try {
+        if (feedback.isVisible && feedback.isCorrect) {
+          await trackAnswerForAchievements({ timeLeft, isCorrect: true });
+          const newAchievements = await checkAchievements();
+          if (newAchievements && newAchievements.length > 0) {
+            setNewAchievement(newAchievements[0]);
+          }
+        }
+      } catch (error) {
+        console.error("Chyba při kontrole achievementů:", error);
+        // Zachytíme chyby a nebudeme je propagovat dál
+      }
+    };
+    
     checkForAchievements();
   }, [feedback, timeLeft]);
 
   const handleAnswer = async (answerIndex: number) => {
     try {
-      // Zruším jakýkoliv existující časovač
+      // Zrušíme jakýkoliv existující časovač
       if (timerRef.current) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
       }
       
+      // Přidáme ochranu proti chybějícím datům
+      if (!currentQuestion) {
+        console.error("Nelze zpracovat odpověď: žádná otázka není k dispozici");
+        return;
+      }
+      
       const isCorrect = answerIndex === currentQuestion.correctAnswer;
       setFeedback({ isVisible: true, isCorrect, selectedIndex: answerIndex });
       
+      // Výpočet XP pouze pokud máme platnou otázku
       const earnedXP = calculateXPForAnswer(
         isCorrect,
         timeLeft,
@@ -173,14 +191,16 @@ const GameContainer = () => {
       if (isCorrect) {
         setGameState(prev => ({
           ...prev,
-          score: prev.score + currentQuestion.points,
+          score: prev.score + (currentQuestion?.points || 0),
           streak: prev.streak + 1
         }));
         
         try {
           const currentStats = await storageService.getUserStats();
-          const updatedStats = updateLevelProgress(currentStats, earnedXP);
-          await storageService.updateUserStats(updatedStats);
+          if (currentStats) {
+            const updatedStats = updateLevelProgress(currentStats, earnedXP);
+            await storageService.updateUserStats(updatedStats);
+          }
         } catch (statsError) {
           console.error('Nelze aktualizovat statistiky:', statsError);
           // Pokračujeme ve hře i když se statistiky nepodaří aktualizovat
@@ -191,9 +211,16 @@ const GameContainer = () => {
           ...prev,
           streak: 0
         }));
+        
+        // Sledujeme i špatnou odpověď pro achievementy
+        try {
+          await trackAnswerForAchievements({ timeLeft, isCorrect: false });
+        } catch (error) {
+          console.error('Chyba při sledování odpovědi:', error);
+        }
       }
 
-      // Nastavíme časovač pro zobrazení tlačítka další otázky
+      // Nastavíme časovač pro zobrazení tlačítka další otázky - VŽDY, bez ohledu na správnost odpovědi
       timerRef.current = setTimeout(() => {
         setCanProceed(true);
       }, 2000);
@@ -204,9 +231,9 @@ const GameContainer = () => {
     }
   };
 
-  // Nová funkce pro přechod na další otázku po kliknutí na tlačítko
+  // Upravená funkce pro přechod na další otázku
   const handleProceedToNextQuestion = () => {
-    // Zruším jakýkoliv existující časovač
+    // Vždy zrušíme všechny časovače
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
@@ -215,13 +242,16 @@ const GameContainer = () => {
     setFeedback({ isVisible: false, isCorrect: false, selectedIndex: -1 });
     setCanProceed(false);
 
-    if (!feedback.isCorrect || gameState.currentQuestion === categoryQuestions.length - 1) {
+    // Přidáme ochranu proti prázdnému poli otázek a ověření indexu
+    if (!feedback.isCorrect || !categoryQuestions || 
+        gameState.currentQuestion >= categoryQuestions.length - 1) {
       handleGameOver();
     } else {
       setGameState(prev => ({
         ...prev,
         currentQuestion: prev.currentQuestion + 1
       }));
+      // Resetujeme časovač pro novou otázku
       setTimeLeft(30);
     }
   };
@@ -316,85 +346,104 @@ const GameContainer = () => {
     );
   }
 
+  // Úplný konec komponenty - ujistíme se, že máme validní JSX
+
+  // Zajistíme správné renderování komponenty GameOver
   if (gameState.isGameOver) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4">
         <BackToMenu />
-        <GameOver 
-          score={gameState.score} 
-          totalQuestions={categoryQuestions.length}
-          onRestart={handleRestart}
-        />
+        <div className="rounded-3xl bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
+          <GameOver 
+            score={gameState.score}
+            totalQuestions={categoryQuestions.length} // Přidáno
+            onRestart={handleRestart}
+          />
+        </div>
+        {newAchievement && (
+          <AchievementPopup
+            achievement={newAchievement}
+            onClose={() => setNewAchievement(null)}
+          />
+        )}
       </div>
     );
   }
 
+  // Hlavní render - upravíme rendering problémových komponent
   return (
-    <>
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4"
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-4">
+      <BackToMenu />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-4xl rounded-3xl bg-white/10 p-8 shadow-2xl backdrop-blur-xl"
       >
-        <BackToMenu />
-        <div className="w-full max-w-2xl rounded-3xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
-          <GameHeader 
-            score={gameState.score}
-            streak={gameState.streak}
-            questionNumber={gameState.currentQuestion + 1}
-            totalQuestions={categoryQuestions.length}
-            timeLeft={timeLeft}
-            category={category.name}
-          />
-          
-          <QuestionDisplay 
-            currentQuestion={currentQuestion}
-            questionNumber={gameState.currentQuestion + 1}
-            totalQuestions={categoryQuestions.length}
-            category={category}
-          />
-          
-          <AnswerOptions 
-            options={currentQuestion.options}
-            feedback={feedback}
-            onAnswer={handleAnswer}
-            correctAnswer={currentQuestion.correctAnswer}
-          />
-          
-          <FeedbackDisplay 
-            feedback={feedback}
-            correctAnswer={currentQuestion.options[currentQuestion.correctAnswer]}
-          />
-          
-          {/* Přidáme tlačítko pro přechod na další otázku s výraznějším designem */}
-          {feedback.isVisible && canProceed && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-6 text-center"
-            >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleProceedToNextQuestion}
-                className="rounded-xl bg-indigo-600 px-8 py-4 font-bold text-white shadow-lg transition-all hover:bg-indigo-700"
+        <GameHeader
+          category={category.name} 
+          score={gameState.score}
+          questionNumber={gameState.currentQuestion + 1} // Změněno z currentQuestion
+          totalQuestions={categoryQuestions.length}     // Změněno z questionsCount
+          timeLeft={timeLeft}
+          streak={gameState.streak}
+        />
+        
+        {currentQuestion ? (
+          <>
+            <QuestionDisplay 
+              currentQuestion={currentQuestion}         // Změněno z questionText
+              questionNumber={gameState.currentQuestion + 1}
+              totalQuestions={categoryQuestions.length}
+              category={category}                      // Přidáme celý objekt kategorie
+            />
+            
+            <AnswerOptions
+              options={currentQuestion.options}
+              feedback={feedback}
+              onAnswer={handleAnswer}
+              correctAnswer={currentQuestion.correctAnswer}
+            />
+            
+            <FeedbackDisplay
+              feedback={feedback}
+              correctAnswer={currentQuestion.options[currentQuestion.correctAnswer]}
+            />
+            
+            {/* Tlačítko pro pokračování na další otázku */}
+            {feedback.isVisible && canProceed && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-6 flex justify-center"
               >
-                {feedback.isCorrect && gameState.currentQuestion < categoryQuestions.length - 1 
-                  ? "Další otázka →" 
-                  : "Ukončit hru"}
-              </motion.button>
-            </motion.div>
-          )}
-        </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleProceedToNextQuestion}
+                  className="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 px-8 py-3 font-bold text-white shadow-lg transition hover:from-blue-600 hover:to-indigo-700"
+                >
+                  {feedback.isCorrect && gameState.currentQuestion < categoryQuestions.length - 1
+                    ? "Další otázka"
+                    : "Dokončit hru"
+                  }
+                </motion.button>
+              </motion.div>
+            )}
+          </>
+        ) : (
+          <div className="flex justify-center p-4">
+            <p className="text-center text-white">Načítání otázky...</p>
+          </div>
+        )}
       </motion.div>
 
-      {newAchievement ? (
-        <AchievementPopup 
+      {newAchievement && (
+        <AchievementPopup
           achievement={newAchievement}
           onClose={() => setNewAchievement(null)}
         />
-      ) : null}
-    </>
+      )}
+    </div>
   );
 };
 
