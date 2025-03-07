@@ -1,12 +1,12 @@
-//src/components/game/FeedbackDisplay.tsx
+// src/components/game/FeedbackDisplay.tsx
 import React from 'react';
-
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface FeedbackDisplayProps {
   feedback: {
     isVisible: boolean;
     isCorrect: boolean;
+    selectedIndex: number;
   };
   correctAnswer: string;
 }
